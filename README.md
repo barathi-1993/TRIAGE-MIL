@@ -2,12 +2,8 @@
   <img src="assets/TRIAGE_MIL_framework.png" width="850">
 </p>
 
-<h1 align="center">TRIAGE-MIL</h1>
-
-<h3 align="center">
-  Multi-Axis Instance Selection and Semantic Hypergraph Modeling <br>
-  for Survival Prediction from Whole-Slide Images
-</h3>
+<h1 align="center">TRIAGE-MIL : Multi-Axis Instance Selection and Semantic Hypergraph Modeling <br>
+  for Survival Prediction from Whole-Slide Images</h1>
 
 <p align="center">
   ✨🌟 <b>MICCAI 2026 — Provisionally Accepted</b> 🌟✨
