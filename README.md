@@ -1,6 +1,4 @@
-# TRIAGE-MIL
-
-Official implementation of **TRIAGE-MIL: Multi-Axis Instance Selection and Semantic Hypergraph Modeling for Survival Prediction from Whole-Slide Images**.
+**TRIAGE-MIL: Multi-Axis Instance Selection and Semantic Hypergraph Modeling for Survival Prediction from Whole-Slide Images**.
 
 TRIAGE-MIL is a weakly supervised survival prediction framework for whole-slide images (WSIs). It combines:
 
