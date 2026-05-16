@@ -551,20 +551,6 @@ Please cite the original CLAM and UNI papers when using this repository.
 
 ---
 
-## 📜 License
-
-Add the appropriate license before public release.
-
-Suggested options:
-
-- MIT License
-- Apache-2.0 License
-- CC BY-NC-SA 4.0 for non-commercial academic use
-
-If this work is connected to patent filing or institutional IP, confirm the license with your institution before public release.
-
----
-
 ## 📬 Contact
 
 For questions, please open an issue or contact the corresponding author.
