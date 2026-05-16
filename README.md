@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="assets/TRIAGE_MIL_framework.jpg" width="850">
-</p>
-
 <h1 align="center">TRIAGE-MIL: Multi-Axis Instance Selection and Semantic Hypergraph Modeling <br>
   for Survival Prediction from Whole-Slide Images</h1>
 
@@ -27,6 +23,9 @@
   Official implementation of <b>TRIAGE-MIL</b>, a weakly supervised survival prediction framework for whole-slide images.
 </p>
 
+<p align="center">
+  <img src="assets/TRIAGE_MIL_framework.jpg" width="850">
+</p>
 ---
 
 ## 📌 Overview
