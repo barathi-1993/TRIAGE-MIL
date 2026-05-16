@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/TRIAGE_MIL_framework.png" width="850">
+  <img src="assets/TRIAGE_MIL_framework.jpg" width="850">
 </p>
 
 <h1 align="center">TRIAGE-MIL: Multi-Axis Instance Selection and Semantic Hypergraph Modeling <br>
