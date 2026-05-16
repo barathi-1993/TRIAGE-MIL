@@ -1,10 +1,10 @@
 {
-  "feature_root": "/data_64T_3/Barathi/Projects/Survival_prediction/CLAM_Feature_Extraction/TCGA_LUAD/UNI",
+  "feature_root": "Path_to/Survival_prediction/CLAM_Feature_Extraction/TCGA_LUAD/UNI",
   "selected_encoder": "pt_files",
   "file_pattern": "*.pt",
   
-  "csv_labels": "/data_64T_1/Barathi/Projects/Survival_prediction/Clinical_data/TCGA_LUAD/LUAD_survival_format_MONTHS_2dp.csv",
-  "splits_dir": "/data_64T_1/Barathi/Projects/Survival_prediction/Results/TCGA_LUAD/splits_CLAM",
+  "csv_labels": "/Path_to/Projects/Survival_prediction/Clinical_data/TCGA_LUAD/LUAD_survival_format_MONTHS_2dp.csv",
+  "splits_dir": "/Path_to/Projects/Survival_prediction/Results/TCGA_LUAD/splits_CLAM",
   
   "id_col": "case_id",
   "slide_id_col": "slide_id",
@@ -14,7 +14,7 @@
   "max_tiles": 4096,
   
   "precompute_cache": {
-    "cache_dir": "/data_64T_1/Barathi/Projects/Survival_prediction/PTR_TOPK_TILES/TCGA_LUAD_CLAM_New/P1/UNI"
+    "cache_dir": "/Path_to/Projects/Survival_prediction/PTR_TOPK_TILES/TCGA_LUAD_CLAM_New/P1/UNI"
   },
   
   "device": "cuda",
@@ -41,7 +41,7 @@
   "split_seed": 15,
   "random_seed": 23,
   
-  "save_dir": "/data_64T_1/Barathi/Projects/Survival_prediction/Results/CLAM_Baseline_Comparison_Latest_New/Scenario1_Random/TRIAGMIL_TCGA_LUAD_CLAM_PTR",
+  "save_dir": "/Path_to/Projects/Survival_prediction/Results/CLAM_Baseline_Comparison_Latest_New/Scenario1_Random/TRIAGMIL_TCGA_LUAD_CLAM_PTR",
   
   "attn_dropout": 0.351,
   "use_adaptive_knn": false,  
