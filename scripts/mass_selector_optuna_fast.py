@@ -15,7 +15,7 @@ MASS Selector (MASS Edition) - GPU Accelerated + Optuna [FIXED VERSION]
     * Axis 1: MH    (variance-based)
     * Axis 2: TR     (magnitude / variance)
     * Axis 3: MI   (neighborhood variance)
-    * Axis 4: TDy     (k-center / farthest-point sampling in feature space)
+    * Axis 4: TD     (k-center / farthest-point sampling in feature space)
 
 - Optuna tunes axis fractions (MH / TR / MI); Diversity gets remainder.
 - min-axis-frac enforces a minimum coverage per major axis (0–2), stealing from Diversity.
@@ -23,17 +23,17 @@ MASS Selector (MASS Edition) - GPU Accelerated + Optuna [FIXED VERSION]
 CLAM-style
 --------------
 python mass_selector_optuna_fast.py \
-  --feature-root /data_64T_3/Shared/Barathi/Extracted_features/UNI/pt_files \
+  --feature-root /path_to/Extracted_features/UNI/pt_files \
   --encoder uni \
-  --out-cache-best /data_64T_3/Shared/Barathi/Extracted_features/MASS \
+  --out-cache-best /path_to/Extracted_features/MASS \
   --format-type clam \
   --gpus "0,1,2,3,4,5,6,7" \
   --n-workers 7 --topk 4096 --min-axis-frac 0.05 --diversity-mode kcenter --save-artifacts --tile-dir /data_64T_3/Shared/Barathi/Extracted_tiles --skip-optuna --only-pid TCGA-CM-4744-01Z-00-DX1.527ead53-bd55-4321-adea-079bf5e2e8a5
 
 python mass_selector_optuna_fast.py \
-  --feature-root /data_64T_3/Shared/Barathi/Extracted_features/UNI/pt_files \
+  --feature-root /path_to/Extracted_features/UNI/pt_files \
   --encoder uni \
-  --out-cache-best /data_64T_3/Shared/Barathi/Extracted_features/MASS \
+  --out-cache-best /path_to/Extracted_features/MASS \
   --format-type clam \
   --gpus "2,3,4,5,6,7" \
   --n-workers 5 \
@@ -41,36 +41,9 @@ python mass_selector_optuna_fast.py \
   --min-axis-frac 0.05 \
   --diversity-mode kcenter \
   --save-artifacts \
-  --tile-dir /data_64T_3/Shared/Barathi/Extracted_tiles \
+  --tile-dir /path_to/Extracted_tiles \
   --skip-optuna \
   --only-pid TCGA-CM-4744-01Z-00-DX1.527ead53-bd55-4321-adea-079bf5e2e8a5
-
-AE-style 
----------
-python mass_selector_optuna_fast.py \
-  --feature-root /data_64T_1/Barathi/Projects/Survival_prediction/Multi_Phase_Feature_Extraction/Extracted_features/STANFORD_793/P1 \
-  --encoder uni \
-  --out-cache-best /data_64T_1/Barathi/Projects/Survival_prediction/MASS_TOPK_TILES/TRIAGE_MIL_NO_MASS/STANFORD/P1/UNI \
-  --format-type ae \
-  --gpus "0,1,2,3,4,5,6,7" \
-  --n-workers 7 --topk 4096 --min-axis-frac 0.0 --diversity-mode kcenter --skip-optuna
-  
-AE-style_singleWSI
-------------------
-python mass_selector_optuna_fast.py \
-  --feature-root /data_64T_1/Barathi/Projects/Survival_prediction/Multi_Phase_Feature_Extraction/Extracted_features/TCGA_STAD/P1 \
-  --encoder uni \
-  --out-cache-best /data_64T_1/Barathi/Projects/Survival_prediction/MASS_TOPK_TILES/TRIAGE_MIL_NEW/TCGA_STAD_discarded_tiles \
-  --format-type ae \
-  --gpus "2,3,4,5,6,7" \
-  --n-workers 5 \
-  --topk 4096 \
-  --min-axis-frac 0.05 \
-  --diversity-mode kcenter \
-  --save-artifacts \
-  --tile-dir /data_64T_1/Barathi/Projects/Survival_prediction/Multi_Phase_Feature_Extraction/Extracted_tiles/TCGA_STAD \
-  --skip-optuna \
-  --only-pid TCGA-SW-A7EA-01Z-00-DX1.C5E1BE0E-0A25-4480-A3AC-DB2ED7471A4E
 """
 
 import os
