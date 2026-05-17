@@ -3,8 +3,6 @@
 """
 MASS core utilities for TRIAGE-MIL.
 
-This file is aligned with the manuscript description:
-
 Quality-aware filtering:
 - magnitude percentile filtering: P2/P98
 - statistical outlier filtering: max absolute z-score <= 3.5
