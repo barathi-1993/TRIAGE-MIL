@@ -127,26 +127,26 @@ TRIAGE-MIL/
 ├── configs/
 │   └── config_TRIAGE_MIL_CLAM_UNI_5fold.json
 │
-├── src/
+├── scripts/
 │   ├── mass_core.py
 │   ├── mass_io_utils.py
 │   ├── mass_selector.py
-│   ├── precompute_hypergraphs.py
-│   ├── train_triage_mil.py
-│   └── km_analysis.py
+│   └── TRIAGE_MIL_train.py
 │
-├── scripts/
-│   ├── run_mass_selection.sh
-│   ├── run_precompute_hypergraphs.sh
-│   ├── train_5fold.sh
-│   └── run_km_analysis.sh
+├── clinical_data/
+│   ├── TCGA_BLCA_survival_format_MONTHS_2dp.csv
+│   ├── TCGA_BRCA_survival_format_MONTHS_2dp.csv
+│   ├── TCGA_STAD_survival_format_MONTHS_2dp.csv
+│   ├── TCGA_LUAD_survival_format_MONTHS_2dp.csv
+│   └── TCGA_COADREAD_survival_format_MONTHS_2dp.csv
+|
+├── splits/
+│   ├── TCGA_BLCA
+│   ├── TCGA_BRCA
+│   ├── TCGA_STAD
+│   ├── TCGA_LUAD
+│   ├── TCGA_COAD_READ
 │
-├── data/
-│   ├── labels/
-│   ├── splits/
-│   └── features/
-│
-├── cache/
 ├── results/
 ├── requirements.txt
 ├── env.yaml
