@@ -31,6 +31,32 @@
 
 ---
 
+## 📚 Table of Contents
+
+- [📌 Overview](#-overview)
+- [🧬 Framework](#-framework)
+- [🔎 MASS: Multi-Axis Stratified Sampling](#-mass-multi-axis-stratified-sampling)
+- [🌐 Semantic Hierarchical Hypergraph](#-semantic-hierarchical-hypergraph)
+- [📁 Repository Structure](#-repository-structure)
+- [🧾 Data Preparation](#-data-preparation)
+- [📄 Label File Format](#-label-file-format)
+- [⚙️ Installation](#️-installation)
+- [🛠️ Configuration](#️-configuration)
+- [🚀 Step 1: MASS Top-k Tile Selection](#-step-1-mass-top-k-tile-selection)
+- [🧩 Step 2: Precompute Semantic Hierarchical Hypergraphs](#-step-2-precompute-semantic-hierarchical-hypergraphs)
+- [🏋️ Step 3: Train TRIAGE-MIL](#️-step-3-train-triage-mil)
+- [📈 Step 4: Kaplan–Meier and Log-rank Analysis](#-step-4-kaplanmeier-and-log-rank-analysis)
+- [🗂️ Datasets](#️-datasets)
+- [🏆 Results](#-results)
+- [🔬 Ablation Study](#-ablation-study)
+- [🎯 Interpretability](#-interpretability)
+- [📦 Pretrained Models and Features](#-pretrained-models-and-features)
+- [📚 Citation](#-citation)
+- [🙏 Acknowledgements](#-acknowledgements)
+- [📬 Contact](#-contact)
+
+---
+
 ## 📌 Overview
 
 **TRIAGE-MIL** is a two-stage weakly supervised framework for survival prediction from whole-slide images (WSIs).
