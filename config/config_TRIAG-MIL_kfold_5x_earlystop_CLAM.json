@@ -1,51 +1,39 @@
 {
-  "feature_root": "Path_to/Survival_prediction/CLAM_Feature_Extraction/TCGA_LUAD/UNI",
-  "selected_encoder": "pt_files",
-  "file_pattern": "*.pt",
-  
-  "csv_labels": "/Path_to/Projects/Survival_prediction/Clinical_data/TCGA_LUAD/LUAD_survival_format_MONTHS_2dp.csv",
-  "splits_dir": "/Path_to/Projects/Survival_prediction/Results/TCGA_LUAD/splits_CLAM",
-  
-  "id_col": "case_id",
-  "slide_id_col": "slide_id",
+  "feature_root": "./data/features",
+  "selected_encoder": "UNI/pt_files",
+  "csv_labels": "./data/labels/survival_labels.csv",
+  "splits_dir": "./data/splits",
+  "id_col": "patient_id",
   "time_col": "survival_time",
   "event_col": "survival_event",
-  
-  "max_tiles": 4096,
-  
-  "precompute_cache": {
-    "cache_dir": "/Path_to/Projects/Survival_prediction/PTR_TOPK_TILES/TCGA_LUAD_CLAM_New/P1/UNI"
-  },
-  
+  "random_seed": 35,
   "device": "cuda",
-  "k_nn": 8,
-  "heads": 8,
-  "hidden": 512,
-  "bins": 1,
-  "amp": false,
+  "max_tiles": 4096,
   "batch_size": 4,
   "gradient_accumulation_steps": 8,
-  "loss_type": "cox",
-  "cox_weight": 1.0,
   "lr": 0.0002,
-  "weight_decay": 1.0e-05,
+  "weight_decay": 0.0001,
   "epochs": 200,
-  
   "early_stopping": true,
-  "early_patience": 25,
-  "early_min_epochs": 40,
-  "early_warmup": 0,
-  
+  "early_patience": 40,
+  "early_min_epochs": 60,
+  "amp": true,
   "k_folds": 5,
-  "stratify_time_bins": 4,
-  "split_seed": 15,
-  "random_seed": 23,
-  
-  "save_dir": "/Path_to/Projects/Survival_prediction/Results/CLAM_Baseline_Comparison_Latest_New/Scenario1_Random/TRIAGMIL_TCGA_LUAD_CLAM_PTR",
-  
-  "attn_dropout": 0.351,
-  "use_adaptive_knn": false,  
-  "num_hyper_layers": 1,
-  "use_self_attn": false,
-  "num_workers": 8
+  "heads": 6,
+  "hidden": 512,
+  "attn_dropout": 0.22,
+  "num_hyper_layers": 4,
+  "learnable_temp": true,
+  "num_workers": 0,
+  "use_semantic_hierarchy": true,
+  "semantic_hierarchy_config": {
+    "k_intra": 10,
+    "k_inter": 5,
+    "tiles_per_super": 12,
+    "enabled": true
+  },
+  "precompute_cache": {
+    "cache_dir": "./cache/MASS_TOPK_TILES/CLAM_UNI"
+  },
+  "save_dir": "./results/TRIAGE_MIL_CLAM_UNI"
 }
