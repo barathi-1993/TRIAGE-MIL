@@ -1,5 +1,7 @@
-<h1 align="center">TRIAGE-MIL: Multi-Axis Instance Selection and Semantic Hypergraph Modeling <br>
-  for Survival Prediction from Whole-Slide Images</h1>
+<h1 align="center">
+  TRIAGE-MIL: Multi-Axis Instance Selection and Semantic Hypergraph Modeling <br>
+  for Survival Prediction from Whole-Slide Images
+</h1>
 
 <p align="center">
   ✨🌟 <b>MICCAI 2026 — Provisionally Accepted</b> 🌟✨
@@ -26,6 +28,7 @@
 <p align="center">
   <img src="assets/TRIAGE_MIL_framework.jpg" width="850">
 </p>
+
 ---
 
 ## 📌 Overview
@@ -49,10 +52,6 @@ TRIAGE-MIL combines three key components:
 
 ## 🧬 Framework
 
-<p align="center">
-  <img src="assets/TRIAGE_MIL_framework.png" width="850">
-</p>
-
 TRIAGE-MIL consists of the following pipeline:
 
 1. **WSI preprocessing using CLAM**
@@ -66,14 +65,18 @@ TRIAGE-MIL consists of the following pipeline:
    - Each tile is represented by a **1024-dimensional embedding**.
 
 3. **Feature quality filtering**
-   - Low-quality or uninformative tile embeddings are removed using statistical criteria.
+   - Low-quality or uninformative tile embeddings are removed using statistical criteria:
+     - feature magnitude filtering using P2/P98
+     - outlier filtering using z-threshold = 3.5
+     - entropy filtering using P3
+     - composite quality threshold Q(xj) ≥ 0.30
 
 4. **MASS tile selection**
    - A fixed budget of **K = 4096** tiles is selected per WSI.
    - Selection is performed using four phenotype-inspired axes.
 
 5. **Semantic hierarchical hypergraph construction**
-   - Selected tiles are grouped into semantic super-nodes.
+   - Selected tiles are grouped into semantic super-nodes using k-means clustering in embedding space.
    - Hyperedges model containment, intra-semantic similarity, and inter-semantic interactions.
 
 6. **Survival prediction**
@@ -120,18 +123,26 @@ This design allows TRIAGE-MIL to model higher-order tissue organization, includi
 ```text
 TRIAGE-MIL/
 ├── assets/
-│   ├── TRIAGE_MIL_framework.png
-│   ├── MASS_stratification.png
-│   └── example_km_curves.png
+│   ├── TRIAGE_MIL_framework.jpg
+│   ├── MASS_stratification.jpg
+│   └── example_km_curves.jpg
 │
 ├── configs/
 │   └── config_TRIAGE_MIL_CLAM_UNI_5fold.json
 │
-├── scripts/
+├── src/
 │   ├── mass_core.py
 │   ├── mass_io_utils.py
 │   ├── mass_selector.py
-│   └── TRIAGE_MIL_train.py
+│   ├── precompute_hypergraphs.py
+│   ├── train_triage_mil.py
+│   └── km_analysis.py
+│
+├── scripts/
+│   ├── run_mass_selection.sh
+│   ├── run_precompute_hypergraphs.sh
+│   ├── train_5fold.sh
+│   └── run_km_analysis.sh
 │
 ├── clinical_data/
 │   ├── TCGA_BLCA_survival_format_MONTHS_2dp.csv
@@ -139,14 +150,15 @@ TRIAGE-MIL/
 │   ├── TCGA_STAD_survival_format_MONTHS_2dp.csv
 │   ├── TCGA_LUAD_survival_format_MONTHS_2dp.csv
 │   └── TCGA_COADREAD_survival_format_MONTHS_2dp.csv
-|
-├── splits/
-│   ├── TCGA_BLCA
-│   ├── TCGA_BRCA
-│   ├── TCGA_STAD
-│   ├── TCGA_LUAD
-│   ├── TCGA_COAD_READ
 │
+├── splits/
+│   ├── TCGA_BLCA/
+│   ├── TCGA_BRCA/
+│   ├── TCGA_STAD/
+│   ├── TCGA_LUAD/
+│   └── TCGA_COAD_READ/
+│
+├── cache/
 ├── results/
 ├── requirements.txt
 ├── env.yaml
@@ -248,7 +260,6 @@ scikit-learn
 lifelines
 h5py
 tqdm
-optuna
 matplotlib
 torch
 torchvision
@@ -270,10 +281,9 @@ Example:
 {
   "feature_root": "./data/features",
   "selected_encoder": "UNI/pt_files",
-  "file_pattern": "*.pt",
 
-  "csv_labels": "./data/labels/survival_labels.csv",
-  "splits_dir": "./data/splits",
+  "csv_labels": "./clinical_data/TCGA_LUAD_survival_format_MONTHS_2dp.csv",
+  "splits_dir": "./splits/TCGA_LUAD",
 
   "id_col": "patient_id",
   "time_col": "survival_time",
@@ -290,7 +300,15 @@ Example:
   "epochs": 200,
 
   "early_stopping": true,
+  "early_patience": 40,
+  "early_min_epochs": 60,
   "k_folds": 5,
+
+  "heads": 6,
+  "hidden": 512,
+  "attn_dropout": 0.22,
+  "num_hyper_layers": 4,
+  "learnable_temp": true,
 
   "use_semantic_hierarchy": true,
   "semantic_hierarchy_config": {
@@ -318,16 +336,8 @@ Run MASS tile selection on CLAM-style UNI feature files:
 python src/mass_selector.py \
   --feature-root ./data/features \
   --encoder UNI/pt_files \
-  --out-cache-best ./cache/MASS_TOPK_TILES/CLAM_UNI \
-  --format-type clam \
-  --gpus "0" \
-  --n-workers 1 \
-  --topk 4096 \
-  --min-axis-frac 0.05 \
-  --diversity-mode kcenter \
-  --save-artifacts \
-  --tile-dir ./data/tiles \
-  --skip-optuna
+  --out-cache ./cache/MASS_TOPK_TILES/CLAM_UNI \
+  --topk 4096
 ```
 
 Expected output:
@@ -337,9 +347,11 @@ cache/MASS_TOPK_TILES/CLAM_UNI/
 ├── patient_001_topk_idx.npy
 ├── patient_001_topk_labels.npy
 ├── patient_001_topk_risks.npy
+├── patient_001_mass_metadata.json
 ├── patient_002_topk_idx.npy
 ├── patient_002_topk_labels.npy
 ├── patient_002_topk_risks.npy
+├── patient_002_mass_metadata.json
 └── ...
 ```
 
@@ -350,9 +362,8 @@ cache/MASS_TOPK_TILES/CLAM_UNI/
 After MASS tile selection, precompute patient-level semantic hypergraphs:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/precompute_hypergraphs.py \
-  --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json \
-  --gpu 0
+python src/precompute_hypergraphs.py \
+  --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json
 ```
 
 Expected output:
@@ -378,27 +389,15 @@ Each hypergraph file contains:
 Train a single fold:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/train_triage_mil.py \
+python src/train_triage_mil.py \
   --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json \
   --fold 0
 ```
 
-Train five folds on separate GPUs:
+Train all five folds:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/train_triage_mil.py --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json --fold 0 &
-CUDA_VISIBLE_DEVICES=1 python src/train_triage_mil.py --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json --fold 1 &
-CUDA_VISIBLE_DEVICES=2 python src/train_triage_mil.py --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json --fold 2 &
-CUDA_VISIBLE_DEVICES=3 python src/train_triage_mil.py --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json --fold 3 &
-CUDA_VISIBLE_DEVICES=4 python src/train_triage_mil.py --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json --fold 4 &
-```
-
-Resume interrupted training:
-
-```bash
-CUDA_VISIBLE_DEVICES=0 AUTO_RESUME=true python src/train_triage_mil.py \
-  --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json \
-  --fold 0
+bash scripts/train_5fold.sh
 ```
 
 ---
@@ -409,8 +408,8 @@ After training, generate Kaplan–Meier curves and log-rank statistics:
 
 ```bash
 python src/km_analysis.py \
-  --predictions_dir ./results/TRIAGE_MIL_CLAM_UNI \
-  --output_dir ./results/TRIAGE_MIL_CLAM_UNI/km_results \
+  --predictions-dir ./results/TRIAGE_MIL_CLAM_UNI \
+  --output-dir ./results/TRIAGE_MIL_CLAM_UNI/km_results \
   --method median
 ```
 
@@ -526,7 +525,7 @@ If you find this work useful, please cite:
 ```bibtex
 @inproceedings{triage_mil_2026,
   title     = {TRIAGE-MIL: Multi-Axis Instance Selection and Semantic Hypergraph Modeling for Survival Prediction from Whole-Slide Images},
-  author    = {Barathi Subramanian, Rathinaraja Jeyaraj, Songmi Noh, George Fisher, Jeanne Shen},
+  author    = {Barathi Subramanian and Rathinaraja Jeyaraj and Songmi Noh and George Fisher and Jeanne Shen},
   booktitle = {Medical Image Computing and Computer Assisted Intervention},
   year      = {2026},
   note      = {Provisionally accepted}
@@ -545,7 +544,6 @@ This work uses and builds upon:
 - **UNI** for pathology foundation-model feature extraction
 - **PyTorch** for deep learning implementation
 - **lifelines** for survival analysis and Kaplan–Meier evaluation
-- **Optuna** for hyperparameter optimization
 
 Please cite the original CLAM and UNI papers when using this repository.
 
