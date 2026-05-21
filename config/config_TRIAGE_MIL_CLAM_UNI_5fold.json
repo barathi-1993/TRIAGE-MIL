@@ -3,14 +3,26 @@
   "selected_encoder": "UNI/pt_files",
   "csv_labels": "./data/labels/survival_labels.csv",
   "splits_dir": "./data/splits",
+
+  "split_protocol": "patient_level_stratified_5fold_60_20_20",
+  "split_col": "split",
+  "train_label": "train",
+  "val_label": "val",
+  "test_label": "test",
+  "checkpoint_metric": "val_cindex",
+  "final_eval_split": "test",
+
   "id_col": "patient_id",
   "time_col": "survival_time",
   "event_col": "survival_event",
+
   "random_seed": 35,
   "device": "cuda",
+
   "max_tiles": 4096,
   "batch_size": 4,
   "gradient_accumulation_steps": 8,
+
   "lr": 0.0002,
   "weight_decay": 0.0001,
   "epochs": 200,
@@ -18,22 +30,28 @@
   "early_patience": 40,
   "early_min_epochs": 60,
   "amp": true,
+
   "k_folds": 5,
+
   "heads": 6,
   "hidden": 512,
   "attn_dropout": 0.22,
   "num_hyper_layers": 4,
   "learnable_temp": true,
+
   "num_workers": 0,
+
   "use_semantic_hierarchy": true,
   "semantic_hierarchy_config": {
+    "enabled": true,
     "k_intra": 10,
     "k_inter": 5,
-    "tiles_per_super": 12,
-    "enabled": true
+    "tiles_per_super": 12
   },
+
   "precompute_cache": {
     "cache_dir": "./cache/MASS_TOPK_TILES/CLAM_UNI"
   },
+
   "save_dir": "./results/TRIAGE_MIL_CLAM_UNI"
 }
