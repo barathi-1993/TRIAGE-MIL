@@ -153,7 +153,7 @@ TRIAGE-MIL/
 │   ├── MASS_stratification.jpg
 │   └── example_km_curves.jpg
 │
-├── configs/
+├── config/
 │   └── config_TRIAGE_MIL_CLAM_UNI_5fold.json
 │
 ├── src/
