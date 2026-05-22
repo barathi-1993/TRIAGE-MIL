@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
+
+CONFIG="configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json"
 
 for FOLD in 0 1 2 3 4
 do
+  echo "Running TRIAGE-MIL fold ${FOLD}"
   python src/train_triage_mil.py \
-    --config configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json \
-    --fold ${FOLD}
+    --config "${CONFIG}" \
+    --fold "${FOLD}"
 done
