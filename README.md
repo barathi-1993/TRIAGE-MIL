@@ -40,6 +40,7 @@
 - [📁 Repository Structure](#-repository-structure)
 - [🧾 Data Preparation](#-data-preparation)
 - [📄 Label File Format](#-label-file-format)
+- [🔀 Cross-Validation Split Format](#-cross-validation-split-format)
 - [⚙️ Installation](#️-installation)
 - [🛠️ Configuration](#️-configuration)
 - [🚀 Step 1: MASS Top-k Tile Selection](#-step-1-mass-top-k-tile-selection)
@@ -95,7 +96,7 @@ TRIAGE-MIL consists of the following pipeline:
      - feature magnitude filtering using P2/P98
      - outlier filtering using z-threshold = 3.5
      - entropy filtering using P3
-     - composite quality threshold Q(xj) ≥ 0.30
+     - composite quality threshold \(Q(x_j) \geq 0.30\)
 
 4. **MASS tile selection**
    - A fixed budget of **K = 4096** tiles is selected per WSI.
@@ -126,19 +127,21 @@ Given tile embeddings from a WSI, MASS first applies feature-space quality filte
 
 The selected tile subset is assigned semantic labels corresponding to these four axes. These semantic labels are later used for semantic hypergraph construction.
 
+Default MASS axis fractions are provided in the public-release implementation. Dataset-specific fractions can be supplied through the command-line arguments in `mass_selector.py`.
+
 ---
 
 ## 🌐 Semantic Hierarchical Hypergraph
 
-TRIAGE-MIL represents selected tiles as a semantic hierarchical hypergraph.
+TRIAGE-MIL represents MASS-selected tiles using a semantic hierarchical hypergraph.
 
-The hypergraph contains:
+For each MASS semantic label, selected tiles are clustered in embedding space using k-means to form semantic super-nodes. The number of super-nodes is determined by the fixed granularity of `tiles_per_super = 12`.
 
-- **Tile nodes**
-- **Semantic super-nodes**
-- **Containment hyperedges**
-- **Intra-semantic hyperedges**
-- **Inter-semantic hyperedges**
+The tile-level incidence matrix contains three hyperedge families:
+
+- **Containment hyperedges:** tiles assigned to the same super-node.
+- **Intra-semantic hyperedges:** an anchor super-node plus nearest super-nodes from the same MASS label.
+- **Inter-semantic hyperedges:** an anchor super-node plus nearest super-nodes from allowed different MASS labels.
 
 This design allows TRIAGE-MIL to model higher-order tissue organization, including relationships among tumor-associated regions, stromal structures, tissue interfaces, and morphologically diverse regions.
 
@@ -153,7 +156,7 @@ TRIAGE-MIL/
 │   ├── MASS_stratification.jpg
 │   └── example_km_curves.jpg
 │
-├── config/
+├── configs/
 │   └── config_TRIAGE_MIL_CLAM_UNI_5fold.json
 │
 ├── src/
@@ -261,6 +264,39 @@ P003,18.2,1
 
 ---
 
+## 🔀 Cross-Validation Split Format
+
+TRIAGE-MIL uses patient-level stratified 5-fold cross-validation with three patient-disjoint subsets per fold:
+
+`train`: model fitting
+`val`: checkpoint selection / early stopping
+`test`: final C-index and Kaplan–Meier analysis
+
+Each fold split file should be stored as:
+
+```text
+splits/TCGA_LUAD/
+├── fold_0.csv
+├── fold_1.csv
+├── fold_2.csv
+├── fold_3.csv
+└── fold_4.csv
+```
+
+Each `fold_*.csv` file should contain:
+
+```text
+patient_id,split
+P001,train
+P002,train
+P003,val
+P004,test
+```
+
+The `val` split is used only for checkpoint selection. The `test` split is not used during training or checkpoint selection.
+
+---
+
 ## ⚙️ Installation
 
 Create a conda environment:
@@ -298,7 +334,7 @@ torchvision
 Edit the configuration file:
 
 ```bash
-configs/config_TRIAGE_MIL_CLAM_UNI_5fold.json
+config/config_TRIAGE_MIL_CLAM_UNI_5fold.json
 ```
 
 Example:
@@ -310,6 +346,14 @@ Example:
 
   "csv_labels": "./clinical_data/TCGA_LUAD_survival_format_MONTHS_2dp.csv",
   "splits_dir": "./splits/TCGA_LUAD",
+
+  "split_protocol": "patient_level_stratified_5fold_60_20_20",
+  "split_col": "split",
+  "train_label": "train",
+  "val_label": "val",
+  "test_label": "test",
+  "checkpoint_metric": "val_cindex",
+  "final_eval_split": "test",
 
   "id_col": "patient_id",
   "time_col": "survival_time",
@@ -323,6 +367,7 @@ Example:
   "batch_size": 4,
   "gradient_accumulation_steps": 8,
   "lr": 0.0002,
+  "weight_decay": 0.0001,
   "epochs": 200,
 
   "early_stopping": true,
@@ -338,10 +383,10 @@ Example:
 
   "use_semantic_hierarchy": true,
   "semantic_hierarchy_config": {
+    "enabled": true,
     "k_intra": 10,
     "k_inter": 5,
-    "tiles_per_super": 12,
-    "enabled": true
+    "tiles_per_super": 12
   },
 
   "precompute_cache": {
@@ -381,6 +426,11 @@ cache/MASS_TOPK_TILES/CLAM_UNI/
 └── ...
 ```
 
+You may also use:
+
+```text
+bash scripts/run_mass_selection.sh
+```
 ---
 
 ## 🧩 Step 2: Precompute Semantic Hierarchical Hypergraphs
@@ -403,10 +453,17 @@ cache/MASS_TOPK_TILES/CLAM_UNI/hypergraphs/
 
 Each hypergraph file contains:
 
-- sparse hypergraph incidence matrix
-- tile-to-super-node assignment
+- sparse tile-level hypergraph incidence matrix
+- MASS labels
+- tile-to-super-node metadata
 - semantic super-node labels
-- metadata
+- hypergraph metadata
+
+You may also use:
+
+```text
+bash scripts/run_precompute_hypergraphs.sh
+```
 
 ---
 
@@ -425,6 +482,22 @@ Train all five folds:
 ```bash
 bash scripts/train_5fold.sh
 ```
+For each fold, the training script saves:
+
+```text
+results/TRIAGE_MIL_CLAM_UNI/
+├── fold_0/
+│   ├── best_model.pt
+│   ├── split_used.csv
+│   ├── training_log.csv
+│   ├── train_predictions.csv
+│   ├── val_predictions_at_best_checkpoint.csv
+│   ├── val_predictions_final_checkpoint.csv
+│   ├── test_predictions.csv
+│   └── metrics_summary.json
+└── ...
+```
+Validation predictions are used only for checkpoint selection. Final performance and Kaplan–Meier analysis should use `test_predictions.csv`.
 
 ---
 
@@ -443,28 +516,32 @@ Expected outputs:
 
 ```text
 results/TRIAGE_MIL_CLAM_UNI/km_results/
-├── fold_0_km_curves.png
-├── fold_1_km_curves.png
-├── fold_2_km_curves.png
-├── fold_3_km_curves.png
-├── fold_4_km_curves.png
-└── km_summary.csv
+├── pooled_heldout_test_km_curves.png
+├── pooled_heldout_test_predictions_with_groups.csv
+├── km_fold_threshold_summary.csv
+└── km_pooled_summary.csv
+```
+You may also use:
+
+```text
+bash scripts/run_km_analysis.sh
 ```
 
 ---
 
 ## 🗂️ Datasets
 
-TRIAGE-MIL was evaluated on six cancer cohorts:
+TRIAGE-MIL was evaluated on six H&E-stained FFPE WSI cohorts using one representative tumor slide per patient:
 
-| Cohort | Number of Cases |
-|---|---:|
-| In-House CRC | 790 |
-| TCGA-LUAD | 565 |
-| TCGA-STAD | 382 |
-| TCGA-BLCA | 365 |
-| TCGA-BRCA | 385 |
-| TCGA-CRC / COAD-READ | 1008 |
+| Cohort         | Organ          | Number of Patients | Events | Censoring Rate |
+| -------------- | -------------- | -----------------: | -----: | -------------: |
+| In-House CRC   | Colon & Rectum |                790 |    228 |          71.1% |
+| TCGA-BRCA      | Breast         |               1008 |    141 |          86.0% |
+| TCGA-LUAD      | Lung           |                382 |    128 |          66.5% |
+| TCGA-COAD-READ | Colon & Rectum |                565 |    120 |          78.8% |
+| TCGA-STAD      | Stomach        |                365 |    145 |          60.3% |
+| TCGA-BLCA      | Bladder        |                385 |    175 |          54.5% |
+
 
 ---
 
@@ -495,7 +572,7 @@ TRIAGE-MIL was compared against 13 state-of-the-art MIL and survival prediction 
 
 TRIAGE-MIL achieved the best mean C-index of **0.685**, improving over the strongest baseline, OTSurv, by **3.3 percentage points**.
 
-Kaplan–Meier analysis showed significant risk-group separation across all six cohorts using median predicted risk for stratification.
+Kaplan–Meier analysis showed significant risk-group separation across all six cohorts using held-out test predictions. Risk thresholds were estimated from the corresponding training-set median risk within each fold and applied to held-out test patients before pooling groups for log-rank testing.
 
 ---
 
