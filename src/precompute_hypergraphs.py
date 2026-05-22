@@ -7,10 +7,12 @@ Manuscript-aligned behavior:
 - MASS labels define semantic groups: MH, TR, MI, TD.
 - For each semantic group, tiles are clustered in embedding space using k-means
   to form super-nodes.
+- The incidence matrix is tile-level: rows are selected tiles and columns are hyperedges.
+- Super-nodes define semantic tile groups but are not separate rows in H.
 - Hyperedges represent:
-  1) tile-to-super-node containment,
-  2) intra-semantic super-node similarity,
-  3) inter-semantic interactions across MASS semantic groups.
+  1) containment: tiles assigned to each super-node,
+  2) intra-semantic grouping: anchor super-node + nearest super-nodes from the same MASS label,
+  3) inter-semantic grouping: anchor super-node + nearest super-nodes from allowed different MASS labels.
 """
 
 import argparse
