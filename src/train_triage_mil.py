@@ -3,14 +3,14 @@
 """
 TRIAGE-MIL training script.
 
-Manuscript-aligned components:
+Components:
 - CLAM + UNI .pt features
 - MASS-selected fixed-budget tile subset
 - semantic hierarchical hypergraph message passing
 - multi-head gated attention pooling
 - Cox partial likelihood survival training
 
-Camera-ready evaluation protocol:
+Evaluation protocol:
 - Patient-level 5-fold cross-validation
 - 60% train / 20% validation / 20% held-out test per fold
 - Validation split is used only for checkpoint selection / early stopping
