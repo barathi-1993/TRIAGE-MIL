@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 python src/mass_selector.py \
   --feature-root ./data/features \
