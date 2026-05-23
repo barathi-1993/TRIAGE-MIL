@@ -29,7 +29,7 @@
   "early_stopping": true,
   "early_patience": 40,
   "early_min_epochs": 60,
-  "amp": true,
+  "amp": false,
 
   "k_folds": 5,
 
