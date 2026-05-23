@@ -34,24 +34,59 @@ import numpy as np
 
 
 def _find_pt_file(feature_root: str, encoder: str, patient_id: str) -> Path:
-    """Find a CLAM-style .pt feature file."""
+    """
+    Find a CLAM-style .pt feature file.
+
+    Supports:
+    1) exact slide-level ID:
+       TCGA-XX-XXXX-01Z-00-DX1.UUID.pt
+    2) prefix slide ID:
+       TCGA-XX-XXXX-01Z-00-DX1
+
+    If exact match fails, the loader searches for files starting with patient_id.
+    This is useful when clinical/split files store the slide prefix but feature
+    filenames contain an additional UUID suffix.
+    """
     feature_root = Path(feature_root)
     encoder_path = Path(encoder)
 
-    candidates = [
-        feature_root / encoder_path / f"{patient_id}.pt",
-        feature_root / encoder_path / "pt_files" / f"{patient_id}.pt",
-        feature_root / "pt_files" / f"{patient_id}.pt",
-        feature_root / f"{patient_id}.pt",
+    candidate_dirs = [
+        feature_root / encoder_path,
+        feature_root / encoder_path / "pt_files",
+        feature_root / "pt_files",
+        feature_root,
     ]
 
-    for path in candidates:
+    # 1. Exact match first
+    exact_candidates = [
+        directory / f"{patient_id}.pt"
+        for directory in candidate_dirs
+    ]
+
+    for path in exact_candidates:
         if path.exists():
             return path
 
-    tried = "\n".join(f"  - {p}" for p in candidates)
+    # 2. Prefix match: patient_id*.pt
+    prefix_matches = []
+    for directory in candidate_dirs:
+        if directory.exists() and directory.is_dir():
+            prefix_matches.extend(sorted(directory.glob(f"{patient_id}*.pt")))
+
+    if len(prefix_matches) == 1:
+        return prefix_matches[0]
+
+    if len(prefix_matches) > 1:
+        # Prefer diagnostic DX slide if multiple matches exist.
+        dx_matches = [p for p in prefix_matches if "DX" in p.stem]
+        selected = sorted(dx_matches if dx_matches else prefix_matches)[0]
+        return selected
+
+    tried = "\n".join(f"  - {p}" for p in exact_candidates)
     raise FileNotFoundError(
-        f"No CLAM .pt feature file found for patient_id='{patient_id}'.\nTried:\n{tried}"
+        f"No CLAM .pt feature file found for patient_id='{patient_id}'.\n"
+        f"Tried exact matches:\n{tried}\n"
+        f"Also searched prefix pattern '{patient_id}*.pt'."
     )
 
 
