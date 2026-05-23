@@ -98,13 +98,72 @@ class CaseBagDataset(Dataset):
         self.hypergraph_dir = self.cache_dir / "hypergraphs"
         self.max_tiles = cfg.get("max_tiles", 4096)
 
-        self.df = self.df[self.df[self.id_col].astype(str).isin(self.case_ids)].copy()
         self.df[self.id_col] = self.df[self.id_col].astype(str)
-        self.row_map = {str(r[self.id_col]): r for _, r in self.df.iterrows()}
 
-        missing = sorted(set(self.case_ids) - set(self.row_map.keys()))
+        def tcga_case_prefix(x: str) -> str:
+            """
+            Convert slide-level TCGA IDs to case-level TCGA IDs.
+            Example:
+            TCGA-2F-A9KP-01Z-00-DX1 -> TCGA-2F-A9KP
+            """
+            x = str(x)
+            return x[:12] if x.startswith("TCGA-") and len(x) >= 12 else x
+
+        # Build flexible lookup maps from the clinical dataframe.
+        lookup = {}
+
+        def add_to_lookup(key, row):
+            key = str(key)
+            if key and key not in lookup:
+                lookup[key] = row
+
+        for _, row in self.df.iterrows():
+            # Main configured ID column
+            pid = str(row[self.id_col])
+            add_to_lookup(pid, row)
+            add_to_lookup(tcga_case_prefix(pid), row)
+
+            # Optional slide_id column
+            if "slide_id" in self.df.columns and pd.notna(row.get("slide_id", None)):
+                slide_id = str(row["slide_id"])
+                add_to_lookup(slide_id, row)
+                add_to_lookup(tcga_case_prefix(slide_id), row)
+
+            # Optional case_id column
+            if "case_id" in self.df.columns and pd.notna(row.get("case_id", None)):
+                case_id = str(row["case_id"])
+                add_to_lookup(case_id, row)
+                add_to_lookup(tcga_case_prefix(case_id), row)
+
+        # Resolve each requested case/slide ID from the split file.
+        self.row_map = {}
+        missing = []
+
+        for cid in self.case_ids:
+            cid = str(cid)
+
+            candidates = [
+                cid,
+                tcga_case_prefix(cid),
+            ]
+
+            matched_row = None
+            for key in candidates:
+                if key in lookup:
+                    matched_row = lookup[key]
+                    break
+
+            if matched_row is None:
+                missing.append(cid)
+            else:
+                self.row_map[cid] = matched_row
+
         if missing:
-            raise ValueError(f"Some case_ids are missing from labels_df: {missing[:10]}")
+            raise ValueError(
+                "Some split IDs could not be matched to labels_df using exact ID, "
+                "slide_id, case_id, or TCGA case-prefix matching. "
+                f"Examples: {missing[:10]}"
+            )
 
     def __len__(self):
         return len(self.case_ids)
