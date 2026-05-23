@@ -165,8 +165,7 @@ TRIAGE-MIL/
 │   ├── mass_selector.py
 │   ├── precompute_hypergraphs.py
 │   ├── train_triage_mil.py
-│   ├── precompute_hypergraphs.py
-summarize_cv_results.py
+│   ├── summarize_cv_results.py
 │   └── km_analysis.py
 │
 ├── scripts/
@@ -182,12 +181,6 @@ summarize_cv_results.py
 │   ├── TCGA_LUAD_survival_format_MONTHS_2dp.csv
 │   └── TCGA_COADREAD_survival_format_MONTHS_2dp.csv
 │
-├── splits/
-│   ├── TCGA_BLCA/
-│   ├── TCGA_BRCA/
-│   ├── TCGA_STAD/
-│   ├── TCGA_LUAD/
-│   └── TCGA_COAD_READ/
 │
 ├── cache/
 ├── results/
