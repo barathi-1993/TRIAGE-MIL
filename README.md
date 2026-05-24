@@ -1,4 +1,4 @@
-<h1 align="center">
+<h1 align="center">   
   TRIAGE-MIL: Multi-Axis Instance Selection and Semantic Hypergraph Modeling <br>
   for Survival Prediction from Whole-Slide Images
 </h1>
